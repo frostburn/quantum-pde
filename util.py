@@ -40,10 +40,23 @@ def advance_pde(t, psi, potential, dt, dx, flow, stencil=1, dimensions=2):
     return psi[s4] + accum*(dt/6.0)
 
 
-def laplacian2D(psi, dx):
+def laplacian_1D(psi, dx):
     """
     Calculate a discrete approximation to the laplacian on a
-    lattice `psi` with lattice constant `dx`.
+    one dimensional lattice `psi` with lattice constant `dx`.
+    Has a stencil of one on each side so the result is a smaller lattice.
+    """
+    # Doing the laplacian like this avoids temporary arrays.
+    result = (-2)*psi[1:-1]
+    result += psi[:-2]
+    result += psi[2:]
+    return result / (dx*dx)
+
+
+def laplacian_2D(psi, dx):
+    """
+    Calculate a discrete approximation to the laplacian on a
+    two dimensional lattice `psi` with lattice constant `dx`.
     Has a stencil of one on each side so the result is a smaller lattice.
     """
     # Doing the laplacian like this avoids temporary arrays.
