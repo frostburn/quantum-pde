@@ -68,9 +68,17 @@ def laplacian_2D(psi, dx):
     return result / (dx*dx)
 
 
-def normalize(psi, dx):
+def normalize_1D(psi, dx):
     """
     Normalize a probability amplitude to unity
     """
     total_probability = (abs(psi)**2).sum()*dx
+    return psi / np.sqrt(total_probability)
+
+
+def normalize_2D(psi, dx):
+    """
+    Normalize a probability amplitude to unity
+    """
+    total_probability = (abs(psi)**2).sum()*dx*dx
     return psi / np.sqrt(total_probability)

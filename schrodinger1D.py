@@ -1,7 +1,7 @@
 from matplotlib.animation import FuncAnimation
 from pylab import *
 
-from util import advance_pde, normalize
+from util import advance_pde, normalize_1D
 from flow import schrodinger_flow_1D
 
 x = linspace(-15, 15, 512)
