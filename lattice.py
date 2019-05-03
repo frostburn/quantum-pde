@@ -10,6 +10,7 @@ RESOLUTIONS = {
     "360p": (640, 360),
     "240p": (426, 240),
     "160p": (284, 160),
+    "80p": (142, 80),
 }
 
 
@@ -26,13 +27,16 @@ def make_lattice_2D(resolution, box_width, extra, stencil=4):
 
     x, y = np.meshgrid(x, y)
 
-    return x, y, dx
+    offscreen = stencil + int(np.ceil(extra / dx))
+    screen_slice = (slice(offscreen, offscreen + height), slice(offscreen, offscreen + width))
+
+    return x, y, dx, screen_slice
 
 
 def make_border_wall_2D(resolution, box_width, extra, weight=1000, stencil=4):
     width, height = RESOLUTIONS[resolution]
     aspect_ratio = width / height
-    x, y, dx = make_lattice_2D(resolution, box_width, extra, stencil=stencil)
+    x, y, dx, _ = make_lattice_2D(resolution, box_width, extra, stencil=stencil)
     r = box_width * 0.5
     x = np.where(x < -r, ((x+r)/extra)**2, np.where(x > r, ((x-r)/extra)**2, 0))
     r /= aspect_ratio
