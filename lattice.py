@@ -42,3 +42,23 @@ def make_border_wall_2D(resolution, box_width, extra, weight=1000, stencil=4):
     r /= aspect_ratio
     y = np.where(y < -r, ((y+r)/extra)**2, np.where(y > r, ((y-r)/extra)**2, 0))
     return np.maximum(x, y) * weight
+
+
+def make_periodic_2D(psi, stencil=4):
+    """
+    Copies parts of a 2D array so that it appears periodic up to `stencil` width.
+    """
+    near = slice(None, stencil)
+    far = slice(-stencil, None)
+    here = slice(stencil, 2*stencil)
+    there = slice(-2*stencil, -stencil)
+    # Edges
+    psi[near, :] = psi[there, :]
+    psi[far, :] = psi[here, :]
+    psi[:, near] = psi[:, there]
+    psi[:, far] = psi[:, here]
+    # Corners
+    psi[near, near] = psi[there, there]
+    psi[near, far] = psi[there, here]
+    psi[far, near] = psi[here, there]
+    psi[far, far] = psi[here, here]
