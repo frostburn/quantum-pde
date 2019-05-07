@@ -1,82 +1,114 @@
 # coding: utf-8
 from __future__ import division
+
+import argparse
+import os
 import sys
+
 
 from matplotlib.animation import FuncAnimation
 from pylab import *
 
 from flow import schrodinger_flow_2D
 from util import normalize_2D, advance_pde
-from lattice import make_lattice_2D, make_border_wall_2D, make_periodic_2D
-
-resolution = "360p"
-
-x, y, dx, screen = make_lattice_2D(resolution, 10, 5)
-wall = make_border_wall_2D(resolution, 10, 5, weight=100)
-# wall *= rand(*wall.shape)
-potential = wall + exp(-(3*(x+1))**4) * (1 - exp(-(5*(y-1))**4) - exp(-(5*(y+1))**4)) * 2000
-# zeno = exp(-(0.01*x)**4 -(0.02*y)**4)
-
-t = 0
-dt = 0.004 * dx
+from lattice import make_lattice_2D, make_border_wall_2D, make_periodic_2D, RESOLUTIONS
+from episodes import EPISODES
 
 
-episode_length = 0.6
-video_length = 60.0
-fps = 60.0
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=u'Dump frames of 2D Schrödinger equation to a folder')
+    parser.add_argument('episode', help='Episode name. One of {}'.format(EPISODES.keys()))
+    parser.add_argument('--folder', help='Folder to dump raw frames into')
+    parser.add_argument('--resolution', help='Screen resolution. One of {}'.format(RESOLUTIONS.keys()), default='160p')
+    parser.add_argument('--animate', help='Animate instead of dumping frames', action='store_true')
+    parser.add_argument('--length', help='Length of resulting video in seconds', type=float, default=60.0)
+    args = parser.parse_args()
 
-num_frames_desired = video_length * fps
-num_frames_offered = episode_length / dt
+    if args.folder and args.animate:
+        print('Animation is not supported while dumping to disk')
+        sys.exit()
 
-ticks_per_frame = int(np.ceil(num_frames_offered / num_frames_desired))
+    if args.folder and not args.animate and not os.path.isdir(args.folder):
+        print("Target folder doesn't exist")
+        sys.exit()
 
-# TODO: Adjust dt to guarantee integer ticks / frame
+    dx, screen, psi, potential, episode_length = EPISODES[args.episode](args.resolution)
 
-# zeno = pow(zeno, 1/dt)
+    t = 0
 
-psi_ = exp(-10*(x+4)**2 - 10*y**2 + 10j*x)
-psi = psi_ * 0
-psi[4:-4, 4:-4] = psi_[4:-4, 4:-4]
-# make_periodic_2D(psi)
-psi = normalize_2D(psi, dx)
+    video_length = args.length
+    fps = 60.0
 
-frame = 0
-while t <= episode_length:
-    if frame % 100 == 0:
-        print("t = {}, Energy = {}".format(t, (dx*dx*abs(schrodinger_flow_2D(0, psi, potential, dx))**2).sum()))
-    with open("./rendered/double_slit/frame{:05}.dat".format(frame), "wb") as f:
-        save(f, psi[screen])
-    for j in range(ticks_per_frame):
-        patch = advance_pde(0, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
-        psi[4:-4, 4:-4] = patch
-        t += dt
-    psi = normalize_2D(psi, dx)
-    frame += 1
+    num_frames_desired = video_length * fps
+    dt_frame = episode_length / num_frames_desired
+    ticks_per_frame = 1
 
-sys.exit()
+    while dt_frame > 0.004 * dx * ticks_per_frame:
+        ticks_per_frame += 1
+
+    dt = dt_frame / ticks_per_frame
+
+    start = datetime.datetime.now()
+
+    print("Rendering episode '{}'".format(args.episode))
+    print("Episode length = {}".format(episode_length))
+    print("Delta t = {}".format(dt))
+    print("Ticks per frame = {}".format(ticks_per_frame))
+    print("Start time = {}".format(start))
+
+    if args.animate:
+        fig, ax = subplots()
+        prob = abs(psi)**2
+        impsi = imshow(prob[screen], vmin=0, vmax=0.1*prob.max())
+
+        def init():
+            return impsi,
+
+        def update(frame):
+            global psi, t
+            if frame == 0:
+                print("t = {}, Energy = {}".format(t, (dx*dx*abs(schrodinger_flow_2D(0, psi, potential, dx))**2).sum()))
+            for j in range(ticks_per_frame):
+                patch = advance_pde(t, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
+                psi[4:-4, 4:-4] = patch
+                t += dt
+            psi = normalize_2D(psi, dx)
+            prob = abs(psi)**2
+            impsi.set_data(prob[screen])
+            return impsi,
+
+        ani = FuncAnimation(fig, update, frames=range(1000), init_func=init, blit=True, repeat=True, interval=1)
+        show()
+    else:
+        checkpoint_path = os.path.join(args.folder, 'checkpoint')
+        if not os.path.isdir(checkpoint_path):
+            os.mkdir(checkpoint_path)
+        raw_path = os.path.join(args.folder, 'raw')
+        if not os.path.isdir(raw_path):
+            os.mkdir(raw_path)
+        frame = 0
+        while t <= episode_length:
+            if frame % 100 == 0:
+                print("t = {}, Energy = {}".format(t, (dx*dx*abs(schrodinger_flow_2D(0, psi, potential, dx))**2).sum()))
+                if t > 0:
+                    now = datetime.datetime.now()
+                    duration = now - start
+                    fraction_complete = t / episode_length
+                    fraction_remaining = 1 - fraction_complete
+                    remaining = datetime.timedelta(seconds=(duration.total_seconds() / fraction_complete * fraction_remaining))
+                    eta = now + remaining
+                    print("ETA = {}; {} left".format(eta, remaining))
+                    print("")
+            if frame % 1000 == 0:
+                with open(os.path.join(checkpoint_path, "frame{:05}.dat".format(frame)), "wb") as f:
+                    save(f, psi)
+            with open(os.path.join(raw_path, "frame{:05}.dat".format(frame)), "wb") as f:
+                save(f, psi[screen])
+            for j in range(ticks_per_frame):
+                patch = advance_pde(t, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
+                psi[4:-4, 4:-4] = patch
+                t += dt
+            psi = normalize_2D(psi, dx)
+            frame += 1
 
 
-fig, ax = subplots()
-prob = abs(psi)**2
-impsi = imshow(prob[screen], vmin=0, vmax=0.004*prob.max())
-
-def init():
-    return impsi,
-
-def update(frame):
-    global psi, t
-    if frame == 0:
-        print("t = {}, Energy = {}".format(t, (dx*dx*abs(schrodinger_flow_2D(0, psi, potential, dx))**2).sum()))
-    for j in range(2):
-        patch = advance_pde(0, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
-        psi[4:-4, 4:-4] = patch
-        # make_periodic_2D(psi)
-        # psi *= zeno
-        t += dt
-    psi = normalize_2D(psi, dx)
-    prob = abs(psi)**2
-    impsi.set_data(prob[screen])
-    return impsi,
-
-ani = FuncAnimation(fig, update, frames=range(1000), init_func=init, blit=True, repeat=True, interval=1)
-show()
