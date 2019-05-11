@@ -32,7 +32,12 @@ if __name__ == '__main__':
         print("Target folder doesn't exist")
         sys.exit()
 
-    dx, screen, psi, potential, episode_length = EPISODES[args.episode](args.resolution)
+    episode = EPISODES[args.episode](args.resolution)
+    if isinstance(episode, tuple):
+        dx, screen, psi, potential, episode_length = episode
+    else:
+        locals().update(episode)
+    locals().setdefault("measurements", {})
 
     t = 0
 
@@ -56,6 +61,27 @@ if __name__ == '__main__':
     print("Ticks per frame = {}".format(ticks_per_frame))
     print("Start time = {}".format(start))
 
+    def step():
+        global psi, t
+        for j in range(ticks_per_frame):
+            patch = advance_pde(t, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
+            psi[4:-4, 4:-4] = patch
+            t += dt
+            for measurement_t in list(measurements.keys()):
+                if t >= measurement_t:
+                    measurement = measurements.pop(measurement_t)
+                    mask = measurement["mask"]
+                    if measurement["forced"]:
+                        psi *= mask
+                    else:
+                        psi = normalize_2D(psi, dx)
+                        prob = (abs(psi * mask)**2*dx*dx).sum()
+                        if prob > rand():
+                            psi *= mask
+                        else:
+                            psi *= 1-mask
+        psi = normalize_2D(psi, dx)
+
     if args.animate:
         fig, ax = subplots()
         prob = abs(psi)**2
@@ -68,16 +94,12 @@ if __name__ == '__main__':
             global psi, t
             if frame == 0:
                 print("t = {}, Energy = {}".format(t, (dx*dx*abs(schrodinger_flow_2D(0, psi, potential, dx))**2).sum()))
-            for j in range(ticks_per_frame):
-                patch = advance_pde(t, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
-                psi[4:-4, 4:-4] = patch
-                t += dt
-            psi = normalize_2D(psi, dx)
+            step()
             prob = abs(psi)**2
             impsi.set_data(prob[screen])
             return impsi,
 
-        ani = FuncAnimation(fig, update, frames=range(1000), init_func=init, blit=True, repeat=True, interval=1)
+        ani = FuncAnimation(fig, update, frames=range(100), init_func=init, blit=True, repeat=True, interval=1)
         show()
     else:
         checkpoint_path = os.path.join(args.folder, 'checkpoint')
@@ -104,11 +126,7 @@ if __name__ == '__main__':
                     save(f, psi)
             with open(os.path.join(raw_path, "frame{:05}.dat".format(frame)), "wb") as f:
                 save(f, psi[screen])
-            for j in range(ticks_per_frame):
-                patch = advance_pde(t, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
-                psi[4:-4, 4:-4] = patch
-                t += dt
-            psi = normalize_2D(psi, dx)
+            step()
             frame += 1
 
 
