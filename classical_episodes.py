@@ -21,6 +21,33 @@ def superposition(num_particles):
     }
 
 
+def colliding_superposition(num_particles):
+    half = num_particles // 2
+    positions = randn(half, 2) * 0.5
+    shift = positions * 0
+    shift[:, 0] = -6
+    shift[:, 1] = 1
+    positions += shift
+    positions = concatenate((positions, randn(num_particles - half, 2) * 0.6))
+    shift = positions * 0
+    shift[:, 0] = 3
+    shift[:, 1] = -0.5
+    positions += shift
+    velocities = randn(half, 2) * 0.1
+    push = velocities * 0
+    push[:, 0] = 4
+    velocities += push
+    velocities = concatenate((velocities, randn(num_particles - half, 2) * 0.1))
+    push = velocities * 0
+    push[:, 0] = -2
+    velocities += push
+
+    return {
+        "positions": positions,
+        "velocities": velocities,
+    }
+
+
 def tunneling(num_particles):
     def force(pos):
         x = pos[:, 0]

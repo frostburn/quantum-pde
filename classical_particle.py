@@ -6,7 +6,7 @@ from pylab import *
 import numpy.random
 
 from lattice import RESOLUTIONS
-from classical_episodes import tunneling, convex_mirror, square_measurement, superposition
+from classical_episodes import tunneling, convex_mirror, square_measurement, superposition, colliding_superposition
 
 width, height = RESOLUTIONS["80p"]
 
@@ -14,7 +14,7 @@ num_particles = 2 * width * height
 
 scale = 0.1
 
-episode = superposition(num_particles)
+episode = colliding_superposition(num_particles)
 if isinstance(episode, tuple):
     positions, velocities, force = episode
 else:
