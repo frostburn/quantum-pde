@@ -91,33 +91,47 @@ def tunneling(resolution, weight=200, omega=14.75):
     return dx, screen, psi, potential, episode_length
 
 
-def single_slit(resolution):
-    x, y, dx, screen = make_lattice_2D(resolution, 10, 5)
-    potential = exp(-(3*(x+1))**4) * (1 - exp(-(5*(y+1))**4)) * 2000
-
+def slit_base(resolution):
+    x, y, dx, screen = make_lattice_2D(resolution, 10, 6)
+    potential = exp(-(8*(x+1))**4) * 2000
     psi_ = exp(-10*(x+4)**2 - 10*y**2 + 15j*x)
     psi = psi_ * 0
     psi[4:-4, 4:-4] = psi_[4:-4, 4:-4]
     psi = normalize_2D(psi, dx)
+    episode_length = 0.5
 
-    episode_length = 0.55
+    return x, y, dx, screen, psi, potential, episode_length
 
+def single_slit(resolution):
+    x, y, dx, screen, psi, potential, episode_length = slit_base(resolution)
+    potential *= 1 - exp(-(5*(y+1))**4)
     return dx, screen, psi, potential, episode_length
 
 
 def double_slit(resolution):
-    x, y, dx, screen = make_lattice_2D(resolution, 10, 5)
-    wall = make_border_wall_2D(resolution, 10, 5, weight=100)
-    potential = wall + exp(-(3*(x+1))**4) * (1 - exp(-(5*(y-1))**4) - exp(-(5*(y+1))**4)) * 2000
-
-    psi_ = exp(-10*(x+4)**2 - 10*y**2 + 15j*x)
-    psi = psi_ * 0
-    psi[4:-4, 4:-4] = psi_[4:-4, 4:-4]
-    psi = normalize_2D(psi, dx)
-
-    episode_length = 0.55
-
+    x, y, dx, screen, psi, potential, episode_length = slit_base(resolution)
+    potential *= 1 - exp(-(5*(y+1))**4) - exp(-(5*(y-1))**4)
     return dx, screen, psi, potential, episode_length
+
+
+def double_slit_measured(resolution):
+    x, y, dx, screen, psi, potential, episode_length = slit_base(resolution)
+    potential *= 1 - exp(-(5*(y+1))**4) - exp(-(5*(y-1))**4)
+
+    mask = 1 - exp(-((4*(x+0.9))**8 + (4*(y-1))**8))
+    measurements = {}
+
+    for i in range(100):
+        measurements[episode_length * i / 100.0] = {"mask": mask, "forced": True}
+
+    return {
+        "dx": dx,
+        "screen": screen,
+        "psi": psi,
+        "potential": potential,
+        "episode_length": episode_length,
+        "measurements": measurements
+    }
 
 
 def box_with_stuff(resolution):
@@ -162,34 +176,6 @@ def gaussian_measured(resolution, inverted=True):
         "measurements": {
             0.02: {"mask": mask, "forced": True},
         },
-    }
-
-
-def double_slit_measured(resolution):
-    x, y, dx, screen = make_lattice_2D(resolution, 10, 5)
-    wall = make_border_wall_2D(resolution, 10, 5, weight=100)
-    potential = wall + exp(-(3*(x+1))**4) * (1 - exp(-(5*(y-1))**4) - exp(-(5*(y+1))**4)) * 2000
-
-    psi_ = exp(-10*(x+4)**2 - 10*y**2 + 15j*x)
-    psi = psi_ * 0
-    psi[4:-4, 4:-4] = psi_[4:-4, 4:-4]
-    psi = normalize_2D(psi, dx)
-
-    episode_length = 0.55
-
-    mask = 1 - exp(-1000*((x+1)**8 + (y-1)**8))
-    measurements = {}
-
-    for i in range(50):
-        measurements[episode_length * i / 50.0] = {"mask": mask, "forced": True}
-
-    return {
-        "dx": dx,
-        "screen": screen,
-        "psi": psi,
-        "potential": potential,
-        "episode_length": episode_length,
-        "measurements": measurements
     }
 
 
