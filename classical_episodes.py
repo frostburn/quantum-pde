@@ -92,6 +92,30 @@ def convex_mirror(num_particles):
     return positions, velocities, force
 
 
+def double_slit(num_particles):
+    # potential = exp(-(8*(x+1))**4) * (1 - exp(-(5*(y+1))**4) - exp(-(5*(y-1))**4))
+
+    def force(pos):
+        x = pos[:, 0]
+        y = pos[:, 1]
+        wall = exp(-(x+1)**4)
+        holes = (1 - exp(-(4*(y+1))**4) - exp(-(4*(y-1))**4))
+        ax = 4 * (x+1)**3 * wall * holes
+        ay = -((y+1)**3 * exp(-(4*(y+1))**4) + (y-1)**3 * exp(-(4*(y-1))**4)) * wall * holes * 1024
+        return array([ax, ay]).T
+
+    positions = randn(num_particles, 2) * 0.5
+    shift = positions * 0
+    shift[:, 0] = -5
+    positions += shift
+    velocities = randn(num_particles, 2) * 0.1
+    push = velocities * 0
+    push[:, 0] = 0.75
+    velocities += push
+
+    return positions, velocities, force
+
+
 def square_measurement(num_particles, inverted=False):
     def in_the_box(pos):
         x = pos[:, 0]

@@ -6,15 +6,15 @@ from pylab import *
 import numpy.random
 
 from lattice import RESOLUTIONS
-from classical_episodes import tunneling, convex_mirror, square_measurement, superposition, colliding_superposition
+from classical_episodes import tunneling, convex_mirror, square_measurement, superposition, colliding_superposition, double_slit
 
-width, height = RESOLUTIONS["80p"]
+width, height = RESOLUTIONS["160p"]
 
 num_particles = 2 * width * height
 
 scale = 0.1
 
-episode = colliding_superposition(num_particles)
+episode = double_slit(num_particles)
 if isinstance(episode, tuple):
     positions, velocities, force = episode
 else:
