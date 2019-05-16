@@ -18,6 +18,7 @@ def superposition(num_particles):
     return {
         "positions": positions,
         "velocities": velocities,
+        "episode_length": 20.0,
     }
 
 
@@ -33,11 +34,11 @@ def colliding_superposition(num_particles):
     shift[:, 0] = 3
     shift[:, 1] = -0.5
     positions += shift
-    velocities = randn(half, 2) * 0.1
+    velocities = randn(half, 2) * 0.2
     push = velocities * 0
     push[:, 0] = 4
     velocities += push
-    velocities = concatenate((velocities, randn(num_particles - half, 2) * 0.1))
+    velocities = concatenate((velocities, randn(num_particles - half, 2) * 0.2))
     push = velocities * 0
     push[:, 0] = -2
     velocities += push
@@ -45,10 +46,15 @@ def colliding_superposition(num_particles):
     return {
         "positions": positions,
         "velocities": velocities,
+        "episode_length": 7.0,
     }
 
 
 def tunneling(num_particles):
+    def potential(x, y):
+        # return exp(-x**4) / 4.0 - 0.001 * y**4 / 4.0
+        return exp(-x**4) * 0.25
+
     def force(pos):
         x = pos[:, 0]
         y = pos[:, 1]
@@ -65,11 +71,19 @@ def tunneling(num_particles):
     push[:, 0] = 0.75
     velocities += push
 
-    return positions, velocities, force
+    return {
+        "positions": positions,
+        "velocities": velocities,
+        "force": force,
+        "potential": potential,
+        "episode_length": 30.0,
+    }
 
 
 def convex_mirror(num_particles):
-    # potential = exp(-(x-3.3+0.12*y*y)**4) * 7000
+    def potential(x, y):
+        curve = (x - 5.5 + 0.07*y**2)
+        return exp(-curve**4)
 
     def force(pos):
         x = pos[:, 0]
@@ -89,18 +103,27 @@ def convex_mirror(num_particles):
     push[:, 0] = 0.75
     velocities += push
 
-    return positions, velocities, force
+    return {
+        "positions": positions,
+        "velocities": velocities,
+        "force": force,
+        "potential": potential,
+        "episode_length": 20.0,
+    }
 
 
 def double_slit(num_particles):
-    # potential = exp(-(8*(x+1))**4) * (1 - exp(-(5*(y+1))**4) - exp(-(5*(y-1))**4))
+    def potential(x, y):
+        wall = exp(-(4*(x+1))**4)
+        holes = 1 - exp(-(4*(y+1))**4) - exp(-(4*(y-1))**4)
+        return wall * holes
 
     def force(pos):
         x = pos[:, 0]
         y = pos[:, 1]
-        wall = exp(-(x+1)**4)
-        holes = (1 - exp(-(4*(y+1))**4) - exp(-(4*(y-1))**4))
-        ax = 4 * (x+1)**3 * wall * holes
+        wall = exp(-(4*(x+1))**4)
+        holes = 1 - exp(-(4*(y+1))**4) - exp(-(4*(y-1))**4)
+        ax = 1024 * (x+1)**3 * wall * holes
         ay = -((y+1)**3 * exp(-(4*(y+1))**4) + (y-1)**3 * exp(-(4*(y-1))**4)) * wall * holes * 1024
         return array([ax, ay]).T
 
@@ -110,10 +133,16 @@ def double_slit(num_particles):
     positions += shift
     velocities = randn(num_particles, 2) * 0.1
     push = velocities * 0
-    push[:, 0] = 0.75
+    push[:, 0] = 0.3
     velocities += push
 
-    return positions, velocities, force
+    return {
+        "positions": positions,
+        "velocities": velocities,
+        "potential": potential,
+        "force": force,
+        "episode_length": 50.0,
+    }
 
 
 def square_measurement(num_particles, inverted=False):
@@ -134,4 +163,16 @@ def square_measurement(num_particles, inverted=False):
         "positions": positions,
         "velocities": velocities,
         "measurements": {1.0: measurement},
+        "episode_length": 10.0,
     }
+
+
+EPISODES = {
+    "square_measurement": square_measurement,
+    "square_measurement_inverted": lambda n: square_measurement(n, inverted=True),
+    "superposition": superposition,
+    "double_slit": double_slit,
+    "convex_mirror": convex_mirror,
+    "tunneling": tunneling,
+    "colliding_superposition": colliding_superposition,
+}
