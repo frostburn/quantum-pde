@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--folder', help='Folder to dump raw frames into')
     parser.add_argument('--resolution', help='Screen resolution. One of {}'.format(RESOLUTIONS.keys()), default='160p')
     parser.add_argument('--animate', help='Animate instead of dumping frames', action='store_true')
-    parser.add_argument('--length', help='Length of resulting video in seconds', type=float, default=60.0)
+    parser.add_argument('--num_frames', help='Number of frames to dump', type=int, default=600)
     args = parser.parse_args()
 
     if args.folder and args.animate:
@@ -41,11 +41,7 @@ if __name__ == '__main__':
 
     t = 0
 
-    video_length = args.length
-    fps = 60.0
-
-    num_frames_desired = video_length * fps
-    dt_frame = episode_length / num_frames_desired
+    dt_frame = episode_length / args.num_frames
     ticks_per_frame = 1
 
     while dt_frame > 0.004 * dx * ticks_per_frame:
@@ -56,6 +52,7 @@ if __name__ == '__main__':
     start = datetime.datetime.now()
 
     print("Rendering episode '{}'".format(args.episode))
+    print("Resolution = {}".format(args.resolution))
     print("Episode length = {}".format(episode_length))
     print("Delta t = {}".format(dt))
     print("Ticks per frame = {}".format(ticks_per_frame))
@@ -85,7 +82,7 @@ if __name__ == '__main__':
     if args.animate:
         fig, ax = subplots()
         prob = abs(psi)**2
-        impsi = imshow(prob[screen], vmin=0, vmax=0.1*prob.max())
+        impsi = imshow(prob[screen], vmin=0, vmax=0.001*prob.max())
 
         def init():
             return impsi,
@@ -108,8 +105,7 @@ if __name__ == '__main__':
         raw_path = os.path.join(args.folder, 'raw')
         if not os.path.isdir(raw_path):
             os.mkdir(raw_path)
-        frame = 0
-        while t <= episode_length:
+        for frame in range(args.num_frames):
             if frame % 100 == 0:
                 print("t = {}, Energy = {}".format(t, (dx*dx*abs(schrodinger_flow_2D(0, psi, potential, dx))**2).sum()))
                 if t > 0:

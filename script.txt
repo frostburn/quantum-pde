@@ -9,7 +9,7 @@ Part 1 - Single particle
 ------------------------
 
 [#1 animation of a spreading gaussian wave function without phase lines]
-This is a particle. It could be a single electron, a hydrogen atom or even a water molecule moving really slowly.
+This is a particle. It could be a single electron, a hydrogen atom or even a water molecule moving very slowly.
 
 [#2 animation of wave function being measured per pixel]
 Well actually, according to the Copenhagen interpretation we should be talking about individual measurements. The amplitude of the wave function defines a probability distribution for the location of the particle and only by repeating the experiment millions of times can we see the pattern.

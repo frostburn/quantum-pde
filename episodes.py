@@ -76,8 +76,8 @@ def convex_mirror(resolution):
     return dx, screen, psi, potential, episode_length
 
 
-def tunneling(resolution, weight=200, omega=14.75):
-    x, y, dx, screen = make_lattice_2D(resolution, 7, extra_width=4, extra_height=0)
+def tunneling(resolution, weight=200, omega=14.75, extra_width=4):
+    x, y, dx, screen = make_lattice_2D(resolution, 7, extra_width=extra_width, extra_height=0)
     potential = exp(-(2*x)**6) * weight
     potential = maximum(potential, (1 - exp(-(0.35*y)**6)) * 1000)
 
@@ -189,6 +189,9 @@ EPISODES = {
     "double_slit": double_slit,
     "box_with_stuff": box_with_stuff,
     "tunneling": tunneling,
+    "tunneling_slow": lambda r: tunneling(r, omega=9.0),
+    "tunneling_fast": lambda r: tunneling(r, omega=18.0, extra_width=6),
     "gaussian_measured": gaussian_measured,
+    "gaussian_measured_inverted": lambda r: gaussian_measured(r, inverted=False),
     "double_slit_measured": double_slit_measured,
 }
