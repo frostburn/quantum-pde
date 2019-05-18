@@ -4,11 +4,11 @@ import tempfile
 import shutil
 
 episodes = [
-    # ("schrodinger", "static_gaussian", 30),  # TODO: Needs manual shuffling and phase-line removal
-    # ("copenhagen", "static_gaussian", 30),
+    ("schrodinger2D", "static_gaussian", 30, True),
+    ("copenhagen", "static_gaussian", 30),
     ("classical_particle", "superposition", 30),
     ("schrodinger2D", "gaussian_superposition", 30),
-    # ("copenhagen", "gaussian_superposition", 30),
+    ("copenhagen", "gaussian_superposition", 30),
     ("schrodinger2D", "colliding_gaussians", 30),
     ("classical_particle", "colliding_superposition", 30),
     ("schrodinger2D", "tunneling_slow", 30),
@@ -38,7 +38,11 @@ master_folder = tempfile.mkdtemp()
 frame = 0
 
 for episode in episodes:
-    command, episode, num_seconds = episode
+    if len(episode) == 3:
+        command, episode, num_seconds = episode
+        hide_phase = False
+    elif len(episode) == 4:
+        command, episode, num_seconds, hide_phase = episode
 
     num_seconds = int(num_seconds * 0.1)
 
@@ -58,20 +62,33 @@ for episode in episodes:
             "--episode", episode,
             "--resolution", resolution,
         ]))
-    if "schrodinger2D" in command:
+        shutil.rmtree(os.path.join(folder, "raw"))
+    elif "schrodinger2D" in command:
         subprocess.call(map(str, [
             "python", command + ".py", episode,
             "--folder", folder,
             "--resolution", resolution,
             "--num_frames", (int(fps * num_seconds)),
         ]))
-        subprocess.call(map(str, [
+        cmd = [
             "python", "schrodinger2D_visuals.py", folder,
             "--contrast", contrast,
             "--episode", episode,
             "--resolution", resolution,
+        ]
+        if hide_phase:
+            cmd.append('--hide_phase')
+        subprocess.call(map(str, cmd))
+        shutil.rmtree(os.path.join(folder, "raw"))
+    elif "copenhagen" in command:
+        subprocess.call(map(str, [
+            "python", command + ".py", episode,
+            "--folder", folder,
+            "--resolution", resolution,
+            "--num_frames", (int(fps * num_seconds)),
         ]))
-    shutil.rmtree(os.path.join(folder, "raw"))
+    else:
+        raise ValueError("Unknown command {}".format(command))
     for filename in sorted(os.listdir(os.path.join(folder, "png"))):
         source = os.path.join(folder, "png", filename)
         destination = os.path.join(master_folder, "frame{:05}.png".format(frame))

@@ -82,7 +82,7 @@ if __name__ == '__main__':
     if args.animate:
         fig, ax = subplots()
         prob = abs(psi)**2
-        impsi = imshow(prob[screen], vmin=0, vmax=0.001*prob.max())
+        impsi = imshow(prob[screen], vmin=0, vmax=0.1*prob.max())
 
         def init():
             return impsi,

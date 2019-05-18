@@ -94,7 +94,7 @@ if __name__ == '__main__':
         raw_path = os.path.join(args.folder, 'raw')
         if not os.path.isdir(raw_path):
             os.mkdir(raw_path)
-        for frame in range(args.num_frames): 
+        for frame in range(args.num_frames):
             step()
             with open(os.path.join(raw_path, "frame{:05}.dat".format(frame)), "wb") as f:
                 save(f, counts)
