@@ -15,7 +15,7 @@ def static_gaussian(resolution):
     psi[4:-4, 4:-4] = psi_[4:-4, 4:-4]
     psi = normalize_2D(psi, dx)
 
-    episode_length = 0.2
+    episode_length = 0.1
 
     return dx, screen, psi, potential, episode_length
 
@@ -48,6 +48,27 @@ def moving_gaussian(resolution):
     return dx, screen, psi, potential, episode_length
 
 
+def harmonic_potential(resolution):
+    x, y, dx, screen = make_lattice_2D(resolution, 5, 1)
+    potential = (x*x + y*y) * 800
+
+    psi_ = exp(-50*((x+1)**2 + (y-0.2)**2) + 15j*y)
+    psi = psi_ * 0
+    psi[4:-4, 4:-4] = psi_[4:-4, 4:-4]
+    psi = normalize_2D(psi, dx)
+
+    episode_length = 0.4
+
+    return {
+        "dx": dx,
+        "screen": screen,
+        "psi": psi,
+        "potential": potential,
+        "episode_length": episode_length,
+        "dt": 0.001 * dx,
+    }
+
+
 def colliding_gaussians(resolution):
     x, y, dx, screen = make_lattice_2D(resolution, 5, 5)
     potential = 0*x
@@ -59,7 +80,13 @@ def colliding_gaussians(resolution):
 
     episode_length = 0.15
 
-    return dx, screen, psi, potential, episode_length
+    return {
+        "dx": dx,
+        "screen": screen,
+        "psi": psi,
+        "potential": potential,
+        "episode_length": episode_length,
+    }
 
 
 def convex_mirror(resolution):
@@ -118,7 +145,7 @@ def double_slit_measured(resolution):
     x, y, dx, screen, psi, potential, episode_length = slit_base(resolution)
     potential *= 1 - exp(-(5*(y+1))**4) - exp(-(5*(y-1))**4)
 
-    mask = 1 - exp(-((4*(x+0.9))**8 + (4*(y-1))**8))
+    mask = 1 - exp(-((4*(x+0.9))**16 + (4*(y-1))**16))
     measurements = {}
 
     for i in range(100):
@@ -138,7 +165,7 @@ def box_with_stuff(resolution):
     x, y, dx, screen = make_lattice_2D(resolution, 10, 0.5)
     wall = make_border_wall_2D(resolution, 10, 0.5, weight=1000)
     potential = wall
-    potential += exp(-(x-0)**2 - (y-1.8)**2) * 60
+    potential += exp(-(x-0)**2 - (y-1.8)**2) * 200
     potential += exp(-(x+y*0.7)**8 - (x*0.7-y-2)**8) * 1000
 
     psi_ = exp(-2*(x+2.5)**2 - 2*y**2 + 5j*x)
@@ -183,6 +210,7 @@ EPISODES = {
     "static_gaussian": static_gaussian,
     "gaussian_superposition": gaussian_superposition,
     "moving_gaussian": moving_gaussian,
+    "harmonic_potential": harmonic_potential,
     "colliding_gaussians": colliding_gaussians,
     "convex_mirror": convex_mirror,
     "single_slit": single_slit,

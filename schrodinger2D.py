@@ -38,13 +38,14 @@ if __name__ == '__main__':
     else:
         locals().update(episode)
     locals().setdefault("measurements", {})
+    locals().setdefault("dt", 0.004 * dx)
 
     t = 0
 
     dt_frame = episode_length / args.num_frames
     ticks_per_frame = 1
 
-    while dt_frame > 0.004 * dx * ticks_per_frame:
+    while dt_frame > dt * ticks_per_frame:
         ticks_per_frame += 1
 
     dt = dt_frame / ticks_per_frame

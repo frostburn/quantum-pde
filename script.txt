@@ -1,12 +1,14 @@
 The quantum wave function explained
 ===================================
 
-Quantum Mechanics explained using an actual wave function
-
-I recently watched a documentary on quantum mechanics and was frustrated by how they made everything sound weird, mysterious or even spooky. This kind of sensational language obscures the fact that we're dealing with phenomena that obey well-defined laws of physics that we can simulate on a computer. In this video I hope to dispel some of the mystery using clear animations of the quantum wave function and compare it with everyday classical physics.
-
 Part 1 - Single particle
 ------------------------
+
+[#0.1 Text]
+Quantum Mechanics explained using an actual wave function
+
+[#0.2 Quantum harmonic oscillator]
+I recently watched a documentary on quantum mechanics and was frustrated by how they made everything sound weird, mysterious or even spooky. This kind of sensational language obscures the fact that we're dealing with phenomena that obey well-defined laws of physics that we can simulate on a computer. In this video I hope to dispel some of the mystery using clear animations of the quantum wave function and compare it with everyday classical physics.
 
 [#1 animation of a spreading gaussian wave function without phase lines]
 This is a particle. It could be a single electron, a hydrogen atom or even a water molecule moving very slowly.

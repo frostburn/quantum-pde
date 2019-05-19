@@ -38,7 +38,7 @@ if __name__ == '__main__':
     if args.episode == 'static_gaussian':
         x, y, dx, screen = make_lattice_2D(args.resolution, 5, 5)
         potential = 0*x
-        psi = exp(-5*(x**2 + y**2)) + 0j
+        psi = exp(-3*(x**2 + y**2)) + 0j
         psi = normalize_2D(psi[screen], dx)
         total_samples = 16000
     elif args.episode == 'gaussian_superposition':
