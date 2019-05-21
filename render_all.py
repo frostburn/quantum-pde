@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from lattice import RESOLUTIONS
 
+ASSETS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets')
 
 episodes = [
     ["text", "Quantum mechanics explained\nusing an actual wave function", 30],
@@ -177,8 +178,9 @@ for folder, thread in zip(folders, threads):
         frame += 1
     shutil.rmtree(folder)
 
+narration = os.path.join(ASSETS_PATH, "script.wav")
 os.chdir(master_folder)
 subprocess.call(
-    "ffmpeg -framerate 60 -i frame%05d.png -i /home/lumi/Music/Quantum\\ Mechanics/part1_edited.wav -codec:v libx264 -codec:a aac -crf 17 -preset slower -bf 2 -flags +cgop -pix_fmt yuv420p -movflags faststart out.mp4",
+    "ffmpeg -framerate 60 -i frame%05d.png -i {} -codec:v libx264 -codec:a aac -crf 17 -preset slower -bf 2 -flags +cgop -pix_fmt yuv420p -movflags faststart out.mp4".format(narration),
     shell=True,
 )
