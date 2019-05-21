@@ -48,10 +48,10 @@ However if the speed is just right, a portion of the wave function will go throu
 [#12 classical hump moving towards a barrier just right]
 Besides some minor self-interference there's nothing "quantum" about this tunneling behaviour. Even our classical particle will sometimes go over the barrier and sometimes reflect back if the speed distribution is just right. A portion of the trajectories even comes to a near-stop on top of the barrier.
 
-[#13 Particle drifting towards a single slit]
+[#13.1 Particle drifting towards a single slit]
 Soon it's time for the infamous double slit experiment, but let's look at a single slit first. I've prepared a high energy potential with a hole in it so that we can focus on the interaction with the obstacle without having to worry about tunneling effects. Most of the waves reflect back and the jet that goes through doesn't do anything special beyond spreading wider than you'd expect.
 
-[#13 Particle drifting towards a double slit]
+[#13.2 Particle drifting towards a double slit]
 If we add a second slit something wonderful happens. The resulting jets from the slits interfere and form this beautiful pattern. This is something that only happens with waves that can self-interfere and has been experimentally verified by shooting single electrons at a metal plate with two slits cut into it.
 
 [#14 Classical double slit]

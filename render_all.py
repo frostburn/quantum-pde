@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from lattice import RESOLUTIONS
 
+
 episodes = [
     ["text", "Quantum mechanics explained\nusing an actual wave function", 30],
     ["schrodinger2D", "harmonic_potential", 30, {'contrast': 3.0}],
@@ -69,7 +70,7 @@ for i in range(len(timestamps) - 1):
     episodes[i][2] = (timestamps[i+1][1] - timestamps[i][1])
     assert episodes[i][2] > 0
 
-resolution = "160p"
+resolution = "360p"
 width, height = RESOLUTIONS[resolution]
 default_sampling_multiplier = 3.0
 white_level = 128

@@ -91,7 +91,7 @@ def colliding_gaussians(resolution):
 
 def convex_mirror(resolution):
     x, y, dx, screen = make_lattice_2D(resolution, 5, 4)
-    potential = exp(-(x-3.3+0.12*y*y)**4) * 7000
+    potential = exp(-(x-3.3+0.15*y*y)**4) * 7000
 
     psi_ = exp(-30*((x+1.5)**2 + y**2) + 35j*x)
     psi = psi_ * 0
@@ -119,7 +119,7 @@ def tunneling(resolution, weight=200, omega=14.75, extra_width=4):
 
 
 def slit_base(resolution):
-    x, y, dx, screen = make_lattice_2D(resolution, 10, 6)
+    x, y, dx, screen = make_lattice_2D(resolution, 10, 10, extra_height=5)
     potential = exp(-(8*(x+1))**4) * 2000
     psi_ = exp(-10*(x+4)**2 - 10*y**2 + 15j*x)
     psi = psi_ * 0
