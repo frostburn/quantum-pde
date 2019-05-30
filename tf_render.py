@@ -4,9 +4,11 @@ from __future__ import division
 import argparse
 import os
 import sys
+import tempfile
 
 from matplotlib.animation import FuncAnimation
 from pylab import *
+import imageio
 
 from lattice import make_lattice_2D, make_border_wall_2D, make_periodic_2D, RESOLUTIONS
 from episodes import EPISODES
@@ -27,15 +29,15 @@ if __name__ == '__main__':
     else:
         locals().update(episode)
     locals().setdefault("measurements", {})
+    locals().setdefault("damping_field", None)
 
     t = 0
     dt = episode_length / args.num_frames
 
+    extra_iterations = 0
+    wave_function = WaveFunction2D(psi, potential, dx, dt, extra_iterations=extra_iterations, damping_field=damping_field)
+
     start = datetime.datetime.now()
-
-    potential *= 0.5
-    wave_function = WaveFunction2D(psi, potential, dx, dt)
-
     print("Rendering episode '{}'".format(args.episode))
     print("Resolution = {}".format(args.resolution))
     print("Episode length = {}".format(episode_length))
@@ -66,7 +68,7 @@ if __name__ == '__main__':
     if args.animate:
         fig, ax = subplots()
         prob = abs(psi)**2
-        impsi = imshow(prob[screen], vmin=0, vmax=0.01*prob.max())
+        impsi = imshow(prob[screen], vmin=0, vmax=0.001*prob.max())
 
         def init():
             return impsi,
@@ -84,4 +86,26 @@ if __name__ == '__main__':
         ani = FuncAnimation(fig, update, frames=range(100), init_func=init, blit=True, repeat=True, interval=1)
         show()
     else:
-        raise NotImplementedError()
+        folder = tempfile.mkdtemp()
+        writer = imageio.get_writer(os.path.join(folder, "out.mp4"), fps=60, quality=10)
+        for frame in range(args.num_frames):
+            step()
+            rgb = np.minimum(wave_function.get_visual(screen).transpose(1, 2, 0) * 255, 255).astype('uint8')
+            writer.append_data(rgb)
+
+            if frame % 100 == 0:
+                psi = wave_function.get_field()
+                prob = abs(psi)**2
+                total_prob = prob.sum() * dx*dx
+                print("t = {}, total probability = {}".format(t, total_prob))
+                if t > 0:
+                    now = datetime.datetime.now()
+                    duration = now - start
+                    fraction_complete = t / episode_length
+                    fraction_remaining = 1 - fraction_complete
+                    remaining = datetime.timedelta(seconds=(duration.total_seconds() / fraction_complete * fraction_remaining))
+                    eta = now + remaining
+                    print("ETA = {}; {} left".format(eta, remaining))
+                    print("")
+        writer.close()
+        print("Done. Results in {}".format(folder))

@@ -52,7 +52,23 @@ class WaveFunction2D(object):
         self.psi_real = tf.reshape(tf.constant(np.real(psi), dtype="float64"), [1, width, height, 1])
         self.psi_imag = tf.reshape(tf.constant(np.imag(psi), dtype="float64"), [1, width, height, 1])
 
-
+    def get_visual(self, screen, potential=None, hide_phase=False, contrast=4):
+        _, width, height, _ = self.psi_real.shape
+        potential = tf.reshape(self.potential, [width, height])[screen]
+        psi = tf.cast(tf.reshape(self.psi_real, [width, height])[screen], dtype=tf.complex128)
+        psi += tf.cast(tf.reshape(self.psi_imag, [width, height])[screen], dtype=tf.complex128) * 1j
+        amplitude = tf.tanh(tf.math.abs(psi) * contrast)
+        phase = tf.math.angle(psi)
+        band1 = (phase / np.pi) ** 10
+        band2 = ((1.05 + phase / np.pi) % 2 - 1) ** 16
+        band3 = ((0.95 + phase / np.pi) % 2 - 1) ** 16
+        rgb = tf.stack([band2, band3, band1])
+        if hide_phase:
+            rgb *= 0
+        rgb *= amplitude ** 0.8
+        rgb += tf.stack([amplitude, amplitude, 0.7*amplitude])
+        rgb += tf.stack([potential*0.2, potential*0.7, potential*0.4])
+        return rgb.numpy()
 
 # from pylab import *
 

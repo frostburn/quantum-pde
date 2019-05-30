@@ -15,7 +15,7 @@ RESOLUTIONS = {
 }
 
 
-def make_lattice_2D(resolution, box_width, extra_width, extra_height=None, stencil=4):
+def make_lattice_2D(resolution, box_width, extra_width, extra_height=None, stencil=1):
     width, height = RESOLUTIONS[resolution]
     if extra_height is None:
         extra_height = extra_width
@@ -37,7 +37,7 @@ def make_lattice_2D(resolution, box_width, extra_width, extra_height=None, stenc
     return x, y, dx, screen_slice
 
 
-def make_border_wall_2D(resolution, box_width, extra_width, extra_height=None, weight=1000, stencil=4):
+def make_border_wall_2D(resolution, box_width, extra_width, extra_height=None, weight=1000, stencil=1):
     width, height = RESOLUTIONS[resolution]
     if extra_height is None:
         extra_height = extra_width
@@ -50,7 +50,7 @@ def make_border_wall_2D(resolution, box_width, extra_width, extra_height=None, w
     return np.maximum(x, y) * weight
 
 
-def make_periodic_2D(psi, stencil=4):
+def make_periodic_2D(psi, stencil=1):
     """
     Copies parts of a 2D array so that it appears periodic up to `stencil` width.
     """
