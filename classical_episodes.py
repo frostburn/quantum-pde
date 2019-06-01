@@ -124,7 +124,7 @@ def double_slit(num_particles):
         wall = exp(-(4*(x+1))**4)
         holes = 1 - exp(-(4*(y+1))**4) - exp(-(4*(y-1))**4)
         ax = 1024 * (x+1)**3 * wall * holes
-        ay = -((y+1)**3 * exp(-(4*(y+1))**4) + (y-1)**3 * exp(-(4*(y-1))**4)) * wall * holes * 1024
+        ay = -((y+1)**3 * exp(-(4*(y+1))**4) + (y-1)**3 * exp(-(4*(y-1))**4)) * wall * 1024
         return array([ax, ay]).T
 
     positions = randn(num_particles, 2) * 0.5

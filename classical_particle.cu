@@ -16,6 +16,7 @@
 // #define PUSH (0.3)
 // #define INITIAL_DISTRIBUTION (1)
 // #define FORCE_TYPE (1)
+// #define EXPOSURE (1)
 
 __device__
 void force_barrier(float *pos, float *vel) {
@@ -34,7 +35,7 @@ void force_double_slit(float *pos, float *vel) {
   float wall = exp(-pow(4*(x+1), 4));
   float holes = 1 - exp(-pow(4*(y+1), 4)) - exp(-pow(4*(y-1), 4));
   float ax = 1024 * pow(x+1, 3) * wall * holes;
-  float ay = -(pow(y+1, 3) * exp(-pow(4*(y+1), 4)) + pow(y-1, 3) * exp(-pow(4*(y-1), 4))) * wall * holes * 1024;
+  float ay = -(pow(y+1, 3) * exp(-pow(4*(y+1), 4)) + pow(y-1, 3) * exp(-pow(4*(y-1), 4))) * wall * 1024;
   vel[0] += ax * DT;
   vel[1] += ay * DT;
 }
@@ -83,7 +84,9 @@ int main(void)
   }
 
   for (int i = 0; i < NUM_FRAMES; ++i) {
-    step<<<N / NUM_THREADS, NUM_THREADS>>>(pos, vel, counts);
+    for (int j = 0; j < EXPOSURE; ++j) {
+      step<<<N / NUM_THREADS, NUM_THREADS>>>(pos, vel, counts);
+    }
     cudaDeviceSynchronize();
     fwrite(counts, sizeof(int), WIDTH * HEIGHT, stdout);
     for (int i = 0; i < WIDTH * HEIGHT; ++i) {
