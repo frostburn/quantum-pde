@@ -1,0 +1,94 @@
+Kvanttimekaniikan aaltofunktio selitettynä
+===================================
+
+Osa 1 - Yksittäinen hiukkanen
+------------------------
+
+[#1 Teksti]
+Kvanttimekaniikka selitettynä käyttäen oikeaa aaltofunktiota
+
+[#2 Blob of the wave function in a quantum harmonic oscillator]
+Katsoin hiljattain dokumentin kvanttimekaniikasta, ja turhauduin siihen kuinka kaikki saatiin kuulostamaan oudolta, salaperäiseltä tai jopa aavemaiselta. Tämänkaltainen sensaatiohakuinen kieli hämärtää sitä tosiasiaa, että kyseessä olevat ilmiöt noudattavat selkeästi määriteltyjä fysiikan lakeja, joita voimme simuloida tietokoneella. Toivon, että voin tällä videolla hälventää kvanttimekaniikan salaperäisyyttä esittämällä selkeitä animaatioita aaltofunktiosta, ja vertaamalla niitä klassiseen fysiikkaan.
+
+[#3 Animation of a spreading gaussian wave function without phase lines]
+Tämä on hiukkanen. Se voisi olla elektroni, vetyatomi tai jopa vesimolekyyli, joka liikkuu hyvin hitaasti.
+
+[#4 Animation of a wave function being measured in small areas and aggregated]
+Oikeastaan pitäisi puhua vain yksittäisistä mittauksista, jos pidättäydytään niin kutsutussa Kööpenhaminan tulkinnassa. Aaltofunktion amplitudi määrittää todennäköisyysjakauman hiukkasen sijainnille, ja sen muoto voidaan nähdä ainoastaan toistamalla koetta tuhansia kertoja.
+
+[#5 Back to spreading gaussian wave now with phase lines]
+Jos taas tukeudutaan monimaailmantulkintaan, tämä animaatio on hyvä kuvaus todellisuudesta. Se riittää tarkoituksiimme, vaikka se onkin vain approksimaatio standardimallin kvanttikentille.
+
+Aaltofunktioon on nyt lisätty raitoja, jotka edustavat jotain jota kutsutaan vaiheeksi. Mitä tiheämmin raidat ovat pakkautuneet, sitä nopeammin aaltofunktio leviää niiden yli.
+
+[#6 One spreading classical hump with a couple of big particles sprikled in]
+Lähin analogia aaltofunktiolle on klassinen hiukkanen, jonka paikka ja nopeus ovat epävarmoja ja normaalijakautuneita. Tähän animaatioon on piirretty kourallinen hiukkasen mahdollisia ratoja, ja todennäköisyyspilvi, joka kertoo miten ratojen jakauma käyttäytyy.
+
+[#7 Two classical humps of different size]
+Käsitellään seuraavaksi superpositiota. Kyseessä ei ole mitään sen kummempaa kuin että ei tiedetä onko hiukkanen oikealla tai vasemmalla.
+
+[#8 Wave function superposition]
+Kvanttimaailma eroaa klassisesta tapauksesta pääasiassa kahdella tavalla. Ensimmäinen ero on aaltofunktion leviäminen on kääntäen verrannollisesti sen kokoon lähtötilanteessa. Jos aaltofunktio on keskittynyt pienelle alueelle, se leviää siitä nopeasti ulospäin. Jos taas aaltofunktio on alunperinkin levittäytynyt laajalla, se pysyy sellaisena suuremmin muuttumatta. Toinen ero on aaltofunktion itseinterferenssi, jossa jotkin osat vahvistavat toisiaan ja toiset taas vaimentavat.
+
+[#9 Similar interference pattern measured per pixel]
+Jos koe toistetaan tuhansia kertoja, saadaan tämänkaltainen kuvio. Itseinterferenssi on aito mitattavissaoleva ilmiö, riippumatta siitä uskommeko aaltofunktion olevan vain matemaattinen työkalu eikä metafyysisesti olemassaoleva asia.
+
+[#10 two humps moving towards each other]
+Huomaa, että puhun interferenssistä enkä vuorovaikutuksesta. Nämä kaksi aaltofunktion osaa lipuvat toistensa läpi muuttumatta. Superposition eri osat eivät vaikuta toisiinsa. Niiden interferenssi on nähtävissä vain mitattaessa.
+
+[#11 two classical humps moving towards each other]
+Sama vuorovaikutuksen puuttuminen on nähtävissä myös klassisen hiukkasen tapauksessa. Jos ei tiedetä onko hiukkanen oikealla ja liikkuu vasemmalle, tai vasemmalla liikkuen oikealla, tämä epävarmuus ei voi vaikuttaa hiukkasen rataan.
+
+[#12 slow particle moving towards a barrier]
+Käsitellään sitten tunneloitumista. Sensaatiohakuisissa uutisissa kvanttimekaanisten hiukkasten väitetään käyttäytyvän kummituksen lailla kulkiessaan seinien läpi. Todellisuudessa atomitasolla ei ole olemassa mitään mitä voisi kutsua "seiniksi". On vain potentiaalivalleja, jotka on vaikea tai helppo ylittää. Jos hiukkanen liikkuu hitaasti kuten kuvassa, se heijastuu takaisin. Mainittakoon kuitenkin, että eksponentiaalisen pieni osa aaltofunktiota pääsee aina läpi.
+
+[#13 fast particle moving over a barrier]
+Jos hiukkanen liikkuu nopeasti se kulkee potentiaalivallin yli sen suuremmin muuttumatta.
+
+[#14 particle moving at just the right speed for a 50-50 split]
+Jos hiukkasen nopeus on valittu juuri oikein, kulkee osa sen aaltofunktiosta läpi ja osa heijastuu takaisin.
+
+[#15 classical hump moving towards a barrier just right]
+Lukuunottamatta vähäistä itseinterferenssiä, tässä tunneloitumisessa ei ole mitään erityisen kvanttimekaanista. Myös klassinen hiukkanen voi yhdellä kertaa ylittää potentiaalivallin ja toisella heijastua takaisin, jos lähtötilan epävarmuutta kuvaava nopeusjakauma on valittu juuri oikein. Tässä on huomattavaa myös se, että osa tämän hiukkasen jakaumasta menee aina potentiaalivallista yli riippumatta vallin suuruudesta, mikä tosin on vain seurausta siitä, että vertaamme kvanttijärjestelmää juuri normaalisti jakautuneeseen ratapilveen.
+
+[#16 Particle drifting towards a single slit]
+Käsitellään kohta kuuluisaa kaksoisrakokoetta, mutta tarkastellaan ensin mitä yhden raon tapauksessa käy. Kuvassa näkyvä potentiaalivalli on niin korkea, että tunnelointivaikutukset voidaan jättää huomiotta. Suurin osa aaltofunktiosta heijastuu takaisin, ja se osuus joka kulkee läpi ei käyttäydy mitenkään erityisesti lukuunottamatta leviämistä laajemmalle vallin toisella puolella kuin mikä olisi mahdollista klassiselle jakaumalle.
+
+[#17 Particle drifting towards a double slit]
+Kun lisätään toinen rako, nähdään jotain merkittävää. Raoista lähtevät suihkut interferoivat ja muodostavat kauniin kuvion. Näin voi käydä vain aalloille, jotka voivat itseinterferoida, ja kuvion syntyminen on todennettu kokeellisesti ampumalla elektroneja kohti metallista levyä, johon on leikattu kaksi rakoa.
+
+[#18 Classical double slit]
+Kun tilannetta verrataan klassiseen tapaukseen, nähdään vain kaksi terävää suihkua, jotka eivät interferoi.
+
+[#19 Particle about to bounce with the momentum distribution plotted alongside + same for the classical particle]
+Aaltofunktio määrittää systeemin tilan täysin, eli toisin sanoen vasemmalla ylhäällä näkyvä kenttä ja sen raidat kertovat täysin missä hiukkanen on ja miten se tulee käyttäytymään. Joskus puhutaan kuiten hiukkasen nopeudesta ikään kuin se olisi olemassa riippumatta hiukkasen paikkajakaumasta, mutta on tärkeää huomata, että se on vain niin kutsuttu Fourier-muunnos. Näin määritelty jakauma käyttäytyy kuitenkin hyvin samalla kuin klassisen hiukkasen nopeusjakauma. Se säilyy muuttumattomana tyhjässä avaruudessa ja vaihtuu negatiiviseksi hiukkasen törmättyä potentiaalivalliin.
+
+[#20 Position distribution varied with the fourier-transform plotted next to it]
+Koska nopeusjakauma ei ole olemassa erillään hiukkasen aaltofunktiosta, on niin kutstuttu Heisenbergin epätarkkuusperiaate enemmänkin teoreema fourier-muunnoksista kuin luonnonlaki. Se on kuitenkin hyvä peukalosääntö. Mitä tarkemmin hiukkasen paikka tunnetaan, sitä laajemmalle hiukkasen nopeusjakauma levittyy.
+
+[#21 Classical measurement inside a square]
+Käsitellään sitten mittaamista. Klassinen tapaus on selkeä: Jos saadaan mittaustulos, joka kertoo että hiukkanen on jossain tämän neliön sisällä, voidaan poistaa kaikki sen ulkopuoliset radat käsittelystä. Ennenpitkää jäljellejäänyt epävarmuus tekee kuvasta jälleen sumean.
+
+[#22 Classical measurement outside a square]
+Jos taas saadaan mittaustulos, jonka mukaan hiukkanen on neliön ulkopuolella, voidaan poistaa neliön sisällä olevat radat. Mittaaminen ei kuitenkaan vaikuta jäljellejääviin yksittäisiin hiukkasen ratoihin.
+
+[#23 Quantum particle about to be measured]
+Näin ei kuitenkaan ole kvanttimekaniikassa. Ei ole mahdollista määritellä yksittäistä rataa, jota pitkin hiukkanen kulkisi vaan joudutaan manipuloimaan aaltofunktiota suoraan. Analogia klassiselle mittaukselle on romahduttaa aaltofunktio mittaustuloksen mukaiseen muotoon. Tämä kuitenkin pumppaa systeemin paljon energiaa, mikä tekee siitä hyvin karkean approksimaation realistiselle mittaustapahtumalle.
+[#23.1 Continued... measurement happens]
+Aaltofunktion romahdettua nähdään shokkiaallon etenevän mittausalueen reunalta. Kvanttitasolla ei ole mahdollista erottaa informaatiota ja dynamiikkaa.
+
+[#24 inverted quantum measurement]
+Vaikka saataisiin käänteinen mittaustulos, nähdään silti shokkiaalto, jota ei olisi, jos systeemi oltaisiin jätetty rauhaan. On tärkeää huomata, että aaltofunktion romahtaminen on jotain ylimääräistä aaltofunktion dynamiikan määräävän Schrödingerin yhtälön päälle. Spontaania aaltofunktion romahtamista ei ole vielä toistaiseksi havaittu.
+Kvanttimekaanisten hiukkasten mittaaminen on hienovaraista puuhaa, sillä se täytyy loppukädessä tehdä toisilla hiukkasilla. Tarkempi analyysi saa odottaa sarjan toista osaa, jossa käsitellään kvanttikietoutumista.
+
+[#25 Double slit experiment about to measured on a single slit]
+Pitäen kaiken tämän mielessä palataan takaisin kaksoisrakokokeen pariin ja sijoitetaan mittausalue toiseen rakoon. Mittataan useita kertoja onko hiukkanen raossa vai ei. Simulaatio on järjestetty siten, että hiukkasta ei koskaan havaita, mutta vaikutus on silti merkittävä: Interferenssikuvio katoaa. Vaikka mitään ei havaita, muuttuu järjestelmän dynamiikka oleellisesti.
+
+[#26 Quantum particle in a convex mirror]
+Toivottavasti nämä simulaatiot ovat valottaneet kvanttimekaniikan eri puolia, ja näyttäneet, että monille aaltofunktion ominaisuuksille löytyy vastineet klassisesta fysiikasta. Bonuksena haluan vielä demonstroida kuinka kovera peili voi väliaikaisesti tiivistää aaltofunktiota.
+
+[#27 Classical particle in a convex mirror]
+Vaikutus on sama myös klassisessa skenaariossa. Peili tavallaan siirtää varmuuden systeemin nopeudesta sen paikkajakaumaan.
+
+[#28 Particle in a box with stuff]
+Kvanttimekaaninen maailma on hienosyinen, muttei luonnostaan arvoituksellinen tai tuntematon. Seuraavassa jaksossa perehdytään useamman hiukkasen kvanttimekaanisiin systeemeihin. Tässä viimeisessä animaatiossa nähdään hiukkanen laatikossa muutaman esteen kanssa. Simulaation avulla on mahdollista nähdä näkymätön, ja tutustua aaltofunktioon muunakin kuin vain yhtälönä paperilla.
