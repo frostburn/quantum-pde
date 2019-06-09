@@ -15,12 +15,28 @@ from episodes import EPISODES
 from tf_integrator import WaveFunction2D
 
 
+def centered_fft2(psi):
+    momentum = fft2(psi)
+    w, h = momentum.shape
+    w //= 2
+    h //= 2
+    momentum = concatenate((momentum[w:], momentum[:w]))
+    momentum = concatenate((momentum[:, h:], momentum[:, :h]), axis=1)
+    return momentum
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=u'Render video or animate the 2D Schrödinger equation')
     parser.add_argument('episode', help='Episode name. One of {}'.format(EPISODES.keys()))
     parser.add_argument('--resolution', help='Screen resolution. One of {}'.format(RESOLUTIONS.keys()), default='160p')
     parser.add_argument('--animate', help='Animate instead of dumping frames', action='store_true')
-    parser.add_argument('--num_frames', help='Number of frames to dump', type=int, default=600)
+    parser.add_argument('--num-frames', help='Number of frames to dump', type=int, default=600)
+    parser.add_argument('--output', help='Output filename for video')
+    parser.add_argument('--contrast', help='Visual contrast', type=float, default=4.0)
+    parser.add_argument('--potential-contrast', help='Visual contrast on the potential overlay', type=float, default=1.0)
+    parser.add_argument('--hide-phase', help='Hide phase lines', action='store_true')
+    parser.add_argument('--show-momentum', help='Show a fourier transform instead', action='store_true')
+    parser.add_argument('--extra-iterations', help='Add extra precision to the integrator', type=int, default=0)
     args = parser.parse_args()
 
     episode = EPISODES[args.episode](args.resolution)
@@ -34,8 +50,7 @@ if __name__ == '__main__':
     t = 0
     dt = episode_length / args.num_frames
 
-    extra_iterations = 0
-    wave_function = WaveFunction2D(psi, potential, dx, dt, extra_iterations=extra_iterations, damping_field=damping_field)
+    wave_function = WaveFunction2D(psi, potential, dx, dt, extra_iterations=args.extra_iterations, damping_field=damping_field)
 
     start = datetime.datetime.now()
     print("Rendering episode '{}'".format(args.episode))
@@ -67,8 +82,11 @@ if __name__ == '__main__':
 
     if args.animate:
         fig, ax = subplots()
-        prob = abs(psi)**2
-        impsi = imshow(prob[screen], vmin=0, vmax=0.001*prob.max())
+        if args.show_momentum:
+            prob = abs(centered_fft2(psi))**2
+        else:
+            prob = abs(psi)**2
+        impsi = imshow(prob[screen], vmin=0, vmax=args.contrast*0.1*prob.max())
 
         def init():
             return impsi,
@@ -76,9 +94,12 @@ if __name__ == '__main__':
         def update(frame):
             step()
             psi = wave_function.get_field()
-            prob = abs(psi)**2
+            if args.show_momentum:
+                prob = abs(centered_fft2(psi))**2
+            else:
+                prob = abs(psi)**2
             if frame == 0:
-                total_prob = prob.sum() * dx*dx
+                total_prob = (abs(psi)**2).sum() * dx*dx
                 print("t = {}, total probability = {}".format(t, total_prob))
             impsi.set_data(prob[screen])
             return impsi,
@@ -86,14 +107,24 @@ if __name__ == '__main__':
         ani = FuncAnimation(fig, update, frames=range(100), init_func=init, blit=True, repeat=True, interval=1)
         show()
     else:
-        folder = tempfile.mkdtemp()
-        writer = imageio.get_writer(os.path.join(folder, "out.mp4"), fps=60, quality=10)
+        output_filename = args.output
+        if not output_filename:
+            folder = tempfile.mkdtemp()
+            output_filename = os.path.join(folder, "out.mp4")
+        writer = imageio.get_writer(output_filename, fps=60, quality=10)
         for frame in range(args.num_frames):
             step()
-            rgb = np.minimum(wave_function.get_visual(screen).transpose(1, 2, 0) * 255, 255).astype('uint8')
+            rgb = wave_function.get_visual(
+                screen,
+                hide_phase=args.hide_phase,
+                contrast=args.contrast,
+                potential_contrast=args.potential_contrast,
+                show_momentum=args.show_momentum
+            )
+            rgb = np.minimum(rgb.transpose(1, 2, 0) * 255, 255).astype('uint8')
             writer.append_data(rgb)
 
-            if frame % 100 == 0:
+            if frame % 100 == 99:
                 psi = wave_function.get_field()
                 prob = abs(psi)**2
                 total_prob = prob.sum() * dx*dx
@@ -108,4 +139,4 @@ if __name__ == '__main__':
                     print("ETA = {}; {} left".format(eta, remaining))
                     print("")
         writer.close()
-        print("Done. Results in {}".format(folder))
+        print("Done. Results in {}".format(output_filename))

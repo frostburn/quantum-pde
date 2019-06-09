@@ -1,16 +1,27 @@
 from pylab import *
 
 
+def static_gaussian(num_particles):
+    positions = randn(num_particles, 2) * 0.5
+    velocities = randn(num_particles, 2) * 0.1
+
+    return {
+        "positions": positions,
+        "velocities": velocities,
+        "episode_length": 20.0,
+    }
+
+
 def superposition(num_particles):
     half = num_particles // 2
-    positions = randn(half, 2) * 0.5
+    positions = randn(half, 2) * 0.1
     shift = positions * 0
-    shift[:, 0] = -4
-    shift[:, 1] = 1
+    shift[:, 0] = -6
+    shift[:, 1] = 1.5
     positions += shift
-    positions = concatenate((positions, randn(num_particles - half, 2)))
+    positions = concatenate((positions, randn(num_particles - half, 2) * 0.5))
     shift = positions * 0
-    shift[:, 0] = 2
+    shift[:, 0] = 3
     shift[:, 1] = -0.5
     positions += shift
     velocities = randn(num_particles, 2) * 0.1
@@ -24,33 +35,33 @@ def superposition(num_particles):
 
 def colliding_superposition(num_particles):
     half = num_particles // 2
-    positions = randn(half, 2) * 0.5
+    positions = randn(half, 2) * 0.1
     shift = positions * 0
     shift[:, 0] = -6
-    shift[:, 1] = 1
+    shift[:, 1] = 1.5
     positions += shift
-    positions = concatenate((positions, randn(num_particles - half, 2) * 0.6))
+    positions = concatenate((positions, randn(num_particles - half, 2) * 0.5))
     shift = positions * 0
     shift[:, 0] = 3
     shift[:, 1] = -0.5
     positions += shift
-    velocities = randn(half, 2) * 0.2
+    velocities = randn(half, 2) * 0.1
     push = velocities * 0
-    push[:, 0] = 4
+    push[:, 0] = 1
     velocities += push
-    velocities = concatenate((velocities, randn(num_particles - half, 2) * 0.2))
+    velocities = concatenate((velocities, randn(num_particles - half, 2) * 0.1))
     push = velocities * 0
-    push[:, 0] = -2
+    push[:, 0] = -0.5
     velocities += push
 
     return {
         "positions": positions,
         "velocities": velocities,
-        "episode_length": 7.0,
+        "episode_length": 20.0,
     }
 
 
-def tunneling(num_particles):
+def tunneling(num_particles, velocity=0.75):
     def potential(x, y):
         # return exp(-x**4) / 4.0 - 0.001 * y**4 / 4.0
         return exp(-x**4) * 0.25
@@ -68,7 +79,7 @@ def tunneling(num_particles):
     positions += shift
     velocities = randn(num_particles, 2) * 0.1
     push = velocities * 0
-    push[:, 0] = 0.75
+    push[:, 0] = velocity
     velocities += push
 
     return {
@@ -108,7 +119,7 @@ def convex_mirror(num_particles):
         "velocities": velocities,
         "force": force,
         "potential": potential,
-        "episode_length": 20.0,
+        "episode_length": 40.0,
     }
 
 
@@ -141,7 +152,7 @@ def double_slit(num_particles):
         "velocities": velocities,
         "potential": potential,
         "force": force,
-        "episode_length": 50.0,
+        "episode_length": 70.0,
     }
 
 
@@ -174,5 +185,7 @@ EPISODES = {
     "double_slit": double_slit,
     "convex_mirror": convex_mirror,
     "tunneling": tunneling,
+    "tunneling_slow": lambda n: tunneling(n, 0.3),
     "colliding_superposition": colliding_superposition,
+    "static_gaussian": static_gaussian,
 }

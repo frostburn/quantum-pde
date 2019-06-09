@@ -4,7 +4,7 @@ import tensorflow as tf
 MAX_DT = 0.1
 
 class WaveFunction2D(object):
-    def __init__(self, psi, potential, dx=1, dt=MAX_DT, damping_field=None, fixed_point_iterations=3, extra_iterations=0):
+    def __init__(self, psi, potential, dx=1, dt=MAX_DT, damping_field=None, fixed_point_iterations=3, extra_iterations=0, renormalize=False):
         self.set_field(psi)
         self.fixed_point_iterations = fixed_point_iterations
 
@@ -16,12 +16,18 @@ class WaveFunction2D(object):
         dt /= self.iterations
 
         width, height = potential.shape
-        self.potential = tf.reshape(tf.constant(np.real(potential) * dt * dx * dx, dtype="float64"), [1, width, height, 1])
+        self.potential_scale = dt * dx * dx
+        self.potential = tf.reshape(tf.constant(np.real(potential) * self.potential_scale, dtype="float64"), [1, width, height, 1])
         self.kernel = tf.reshape(tf.constant(np.array([0, 1, 0, 1, -4, 1, 0, 1, 0]) * dt, dtype="float64"), [3, 3, 1, 1])
         if damping_field is None:
             self.damping_field = None
         else:
             self.damping_field = tf.reshape(tf.constant(np.real(damping_field), dtype="float64"), [1, width, height, 1])
+
+        renormalize = True
+        self.renormalize = renormalize
+        if renormalize:
+            self.dx = dx
 
         def integrator(psi_real, psi_imag):
             for _ in range(self.iterations):
@@ -33,6 +39,10 @@ class WaveFunction2D(object):
                     psi_new_imag = psi_imag + tf.nn.conv2d(temp, self.kernel, 1, 'SAME') - self.potential * temp
                 psi_real = psi_new_real
                 psi_imag = psi_new_imag
+            if self.renormalize:
+                total_probability = tf.reduce_sum(psi_real*psi_real + psi_imag*psi_imag) * self.dx**2
+                psi_real /= tf.sqrt(total_probability)
+                psi_imag /= tf.sqrt(total_probability)
             if self.damping_field is None:
                 return psi_real, psi_imag
             return psi_real * self.damping_field, psi_imag * self.damping_field
@@ -52,11 +62,21 @@ class WaveFunction2D(object):
         self.psi_real = tf.reshape(tf.constant(np.real(psi), dtype="float64"), [1, width, height, 1])
         self.psi_imag = tf.reshape(tf.constant(np.imag(psi), dtype="float64"), [1, width, height, 1])
 
-    def get_visual(self, screen, potential=None, hide_phase=False, contrast=4):
+    def get_visual(self, screen, hide_phase=False, contrast=4, potential_contrast=1, show_momentum=False):
         _, width, height, _ = self.psi_real.shape
-        potential = tf.reshape(self.potential, [width, height])[screen]
-        psi = tf.cast(tf.reshape(self.psi_real, [width, height])[screen], dtype=tf.complex128)
-        psi += tf.cast(tf.reshape(self.psi_imag, [width, height])[screen], dtype=tf.complex128) * 1j
+        potential = tf.reshape(self.potential, [width, height])[screen] / (self.potential_scale * 1000) * potential_contrast
+        if show_momentum:
+            psi = tf.cast(tf.reshape(self.psi_real, [width, height]), dtype=tf.complex128)
+            psi += tf.cast(tf.reshape(self.psi_imag, [width, height]), dtype=tf.complex128) * 1j
+            psi = tf.signal.fft2d(psi)
+            w = width // 2
+            h = height // 2
+            psi = tf.concat([psi[w:], psi[:w]], axis=0)
+            psi = tf.concat([psi[:, h:], psi[:, :h]], axis=1)
+            psi = psi[screen]
+        else:
+            psi = tf.cast(tf.reshape(self.psi_real, [width, height])[screen], dtype=tf.complex128)
+            psi += tf.cast(tf.reshape(self.psi_imag, [width, height])[screen], dtype=tf.complex128) * 1j
         amplitude = tf.tanh(tf.math.abs(psi) * contrast)
         phase = tf.math.angle(psi)
         band1 = (phase / np.pi) ** 10
@@ -67,63 +87,6 @@ class WaveFunction2D(object):
             rgb *= 0
         rgb *= amplitude ** 0.8
         rgb += tf.stack([amplitude, amplitude, 0.7*amplitude])
-        rgb += tf.stack([potential*0.2, potential*0.7, potential*0.4])
+        if not show_momentum:
+            rgb += tf.stack([potential*0.2, potential*0.7, potential*0.4])
         return rgb.numpy()
-
-# from pylab import *
-
-# x = linspace(-5, 5, 100)
-# x, y = meshgrid(x, x)
-
-# psi = exp(-x*x - y*y + 5j*x - 1j*y)
-# potential = exp(-(x-3) ** 2)
-# damping = exp(-(0.15*x)**12 - (0.15*y)**12)
-
-# wave_function = WaveFunction2D(psi, potential, damping_field=damping)
-
-# while True:
-#     for _ in range(100):
-#         wave_function.step()
-
-#     psi_default = wave_function.get_field()
-
-#     print(abs(psi_default).max())
-
-#     imshow(abs(psi_default))
-#     show()
-
-# asdasd
-
-# wave_function = WaveFunction2D(psi, potential, dt=0.1*MAX_DT, damping_field=pow(damping, 0.1))
-
-# for _ in range(500):
-#     wave_function.step()
-
-# psi_accurate = wave_function.get_field()
-
-# print(abs(psi_accurate - psi_default).max())
-
-
-# asdfsdf
-
-# x = linspace(-5, 5, 400)
-# x, y = meshgrid(x, x)
-
-# psi = exp(-x*x - y*y + 5j*x - 1j*y)
-# potential = exp(-(x-3) ** 2)
-
-# wave_function = WaveFunction2D(psi, potential, dx=0.5)
-
-# for _ in range(500):
-#     wave_function.step()
-
-# psi_half = wave_function.get_field()[::2,::2]
-
-# # print(abs(psi_half - psi_accurate).max())
-# print(abs(psi_half - psi_default).max())
-
-# imshow(abs(psi_half))
-# show()
-
-# # imshow(abs(psi_half - psi_default))
-# # show()

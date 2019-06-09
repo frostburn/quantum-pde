@@ -5,152 +5,173 @@ import shutil
 from threading import Thread
 
 from PIL import Image, ImageDraw, ImageFont
+import imageio
+import numpy as np
 
 from lattice import RESOLUTIONS
 
 ASSETS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets')
 
 episodes = [
-    ["text", "Quantum mechanics explained\nusing an actual wave function", 30],
-    ["schrodinger2D", "harmonic_potential", 30, {'contrast': 3.0}],
-    ["schrodinger2D", "static_gaussian", 30, {'hide_phase': True, 'contrast': 4.0}],
-    ["copenhagen", "static_gaussian", 30],
-    ["schrodinger2D", "static_gaussian", 30],
-    ["classical_particle", "superposition", 30],
-    ["schrodinger2D", "gaussian_superposition", 30],
-    ["copenhagen", "gaussian_superposition", 30],
-    ["schrodinger2D", "colliding_gaussians", 30, {'contrast': 6.0}],
-    ["classical_particle", "colliding_superposition", 30],
-    ["schrodinger2D", "tunneling_slow", 30],
-    ["schrodinger2D", "tunneling_fast", 30],
-    ["schrodinger2D", "tunneling", 30],
-    ["classical_particle", "tunneling", 30],
-    ["schrodinger2D", "single_slit", 30, {'contrast': 40.0}],
-    ["schrodinger2D", "double_slit", 30, {'contrast': 40.0}],
-    ["classical_particle", "double_slit", 30, {'sampling_multiplier': 10.0}],
-    ["classical_particle", "square_measurement", 30],
-    ["classical_particle", "square_measurement_inverted", 30],
-    ["schrodinger2D", "gaussian_measured_inverted", 30, {'contrast': 4.0}],
-    ["schrodinger2D", "gaussian_measured", 30, {'contrast': 4.0}],
-    ["schrodinger2D", "double_slit_measured", 30, {'contrast': 40.0}],
-    ["schrodinger2D", "convex_mirror", 30, {'contrast': 4.0}],
-    ["classical_particle", "convex_mirror", 30],
-    ["schrodinger2D", "box_with_stuff", 30, {'contrast': 10.0}],
+    # ["text", "Quantum mechanics explained\nusing an actual wave function", 30],
+    ["text", u"Kvanttimekaniikka selitettynä\noikealla aaltofunktiolla", 30],  # 1
+    ["tf_render", "harmonic_potential", 30, {'potential_contrast': 0.05}],  # 2
+    ["tf_render", "static_gaussian", 30, {'hide_phase': True}],  # 3
+    ["copenhagen", "static_gaussian", 30],  # 4
+    ["tf_render", "static_gaussian", 30],  # 5
+    ["classical_particle", "static_gaussian", 30],  # 6
+    ["classical_particle", "superposition", 30],  # 7
+    ["tf_render", "gaussian_superposition", 30], # 8
+    ["copenhagen", "gaussian_superposition", 30],  # 9
+    ["tf_render", "colliding_gaussians", 30, {'contrast': 6.0}],  # 10
+    ["classical_particle", "colliding_superposition", 30],  # 11
+    ["tf_render", "tunneling_slow", 30],  # 12
+    ["tf_render", "tunneling_fast", 30],  # 13
+    ["tf_render", "tunneling", 30],  # 14
+    ["classical_particle", "tunneling", 30],  # 15
+    ["tf_render", "single_slit", 30, {'contrast': 40.0}],  # 16
+    ["tf_render", "double_slit", 30, {'contrast': 40.0}],  # 17
+    ["classical_particle", "double_slit", 30],  # 18
+    [[
+        ["tf_render", "tunneling_slow"],
+        ["tf_render", "tunneling_slow", {'show_momentum': True, 'contrast': 0.002}],
+        ["classical_particle", "tunneling_slow"],
+        ["classical_particle", "tunneling_slow", {"show_momentum": True}],
+    ], 30],  # 19
+    # ["fourier", 30],  # 20
+    ["classical_particle", "square_measurement", 30],  # 21
+    ["classical_particle", "square_measurement_inverted", 30],  # 22
+    ["tf_render", "gaussian_measured_inverted", 30, {'contrast': 4.0}],  # 23
+    ["tf_render", "gaussian_measured", 30, {'contrast': 4.0}],  # 24
+    ["tf_render", "double_slit_measured", 30, {'contrast': 40.0}],  # 25
+    ["tf_render", "convex_mirror", 30, {'contrast': 4.0}],  # 26
+    ["classical_particle", "convex_mirror", 30],  # 27
+    ["tf_render", "box_with_stuff", 30, {'contrast': 10.0}],  # 28
 ]
 
-timestamps = [
-    (-1, 0),
-    (0.1, 5.1),
-    (0.2, 42),
-    (1, 51.8),
-    (2, 60 + 14.5),
-    (3, 60 + 52),
-    (4, 140),
-    (5, 3*60+3),
-    (6, 3*60+23),
-    (7, 3*60+45),
-    (8, 4*60+8),
-    (9, 4*60+34),
-    (10, 4*60+44),
-    (11, 4*60+53),
-    (12, 5*60+19),
-    (13.1, 5*60+47),
-    (13.2, 6*60+12),
-    (14, 6*60+19),
-    (15, 6*60+40),
-    (16, 6*60+55),
-    (17, 8*60+2),
-    (18, 8*60+33),
-    (19, 9*60+8),
-    (20, 9*60+29),
-    (21, 9*60+49),
-    (22, 10*60+25),
-]
+# timestamps = [
+#     (-1, 0),
+#     (0.1, 5.1),
+#     (0.2, 42),
+#     (1, 51.8),
+#     (2, 60 + 14.5),
+#     (3, 60 + 52),
+#     (4, 140),
+#     (5, 3*60+3),
+#     (6, 3*60+23),
+#     (7, 3*60+45),
+#     (8, 4*60+8),
+#     (9, 4*60+34),
+#     (10, 4*60+44),
+#     (11, 4*60+53),
+#     (12, 5*60+19),
+#     (13.1, 5*60+47),
+#     (13.2, 6*60+12),
+#     (14, 6*60+19),
+#     (15, 6*60+40),
+#     (16, 6*60+55),
+#     (17, 8*60+2),
+#     (18, 8*60+33),
+#     (19, 9*60+8),
+#     (20, 9*60+29),
+#     (21, 9*60+49),
+#     (22, 10*60+25),
+# ]
 
-for i in range(len(timestamps) - 1):
-    episodes[i][2] = (timestamps[i+1][1] - timestamps[i][1])
-    assert episodes[i][2] > 0
+# for i in range(len(timestamps) - 1):
+#     episodes[i][2] = (timestamps[i+1][1] - timestamps[i][1])
+#     assert episodes[i][2] > 0
 
-resolution = "360p"
-width, height = RESOLUTIONS[resolution]
-default_sampling_multiplier = 3.0
-white_level = 128
-default_contrast = 8.0
+base_resolution = "160p"
+sub_resolution = str(int(base_resolution[:-1]) // 2) + "p"
+width, height = RESOLUTIONS[base_resolution]
+num_blocks = 1000
+extra_iterations = 2
 fps = 60
+work_folder = "/home/lumi/quantum-pde-data"
 
-master_folder = tempfile.mkdtemp()
 frame = 0
 remainder = 0.0
 
-def render_episode(episode, folder, num_frames):
+def render_episode(episode, num_frames, outfile, resolution=base_resolution):
     print(episode)
+    print(outfile)
+    hide_phase = False
+    show_momentum = False
+    potential_contrast = 1.0
+    contrast = 4.0
+    opts = locals()
     if len(episode) == 3:
         command, episode, num_seconds = episode
-        hide_phase = False
-        contrast = default_contrast
-        sampling_multiplier = default_sampling_multiplier
     elif len(episode) == 4:
         command, episode, num_seconds, options = episode
-        hide_phase = options.get('hide_phase', False)
-        contrast = options.get('contrast', default_contrast)
-        sampling_multiplier = options.get('sampling_multiplier', default_sampling_multiplier)
+        potential_contrast = options.get("potential_contrast", potential_contrast)
+        hide_phase = options.get("hide_phase", hide_phase)
+        show_momentum = options.get("show_momentum", show_momentum)
+        contrast = options.get("contrast", contrast)
 
-    if "classical" in command:
-        subprocess.call(map(str, [
+    if command == "classical_particle":
+        args = [
             "python", command + ".py", episode,
-            "--folder", folder,
+            "--output", outfile,
             "--resolution", resolution,
-            "--num_frames", num_frames,
-            "--sampling_multiplier", sampling_multiplier,
-        ]))
-        subprocess.call(map(str, [
-            "python", "classical_visuals.py", folder,
-            "--white_level", white_level,
-            "--episode", episode,
-            "--resolution", resolution,
-        ]))
-        shutil.rmtree(os.path.join(folder, "raw"))
-    elif "schrodinger2D" in command:
-        subprocess.call(map(str, [
-            "python", command + ".py", episode,
-            "--folder", folder,
-            "--resolution", resolution,
-            "--num_frames", num_frames,
-        ]))
-        cmd = [
-            "python", "schrodinger2D_visuals.py", folder,
+            "--num-frames", num_frames,
+            "--num-blocks", num_blocks,
             "--contrast", contrast,
-            "--episode", episode,
+        ]
+        if show_momentum:
+            args.append("--show-momentum")
+        subprocess.check_output(map(str, args))
+    elif command == "tf_render":
+        args = [
+            "python", command + ".py", episode,
+            "--output", outfile,
             "--resolution", resolution,
+            "--num-frames", num_frames,
+            "--potential-contrast", potential_contrast,
+            "--extra-iterations", extra_iterations,
+            "--contrast", contrast,
         ]
         if hide_phase:
-            cmd.append('--hide_phase')
-        subprocess.call(map(str, cmd))
-        shutil.rmtree(os.path.join(folder, "raw"))
+            args.append("--hide-phase")
+        if show_momentum:
+            args.append("--show-momentum")
+        subprocess.check_output(map(str, args))
     elif "copenhagen" in command:
-        subprocess.call(map(str, [
+        subprocess.check_output(map(str, [
             "python", command + ".py", episode,
-            "--folder", folder,
+            "--output", outfile,
             "--resolution", resolution,
-            "--num_frames", num_frames,
+            "--num-frames", num_frames,
         ]))
     else:
         raise ValueError("Unknown command {}".format(command))
 
-threads = []
-folders = []
-for episode in episodes:
-    if len(episode) == 3:
+for n, episode in enumerate(episodes):
+    command = None
+    if len(episode) == 2:
+        sub_episodes, num_seconds = episode
+    elif len(episode) == 3:
         command, arg, num_seconds = episode
-        hide_phase = False
     elif len(episode) == 4:
-        command, arg, num_seconds, hide_phase = episode
-
-    folder = tempfile.mkdtemp()
+        command, arg, num_seconds, options = episode
 
     num_frames = fps * num_seconds + remainder
     remainder = num_frames - int(num_frames)
     num_frames = int(num_frames)
+
+    outfile = os.path.join(work_folder, "episode{:02}.mp4".format(n))
+    if os.path.isfile(outfile):
+        print("File {} exists. Skipping...".format(outfile))
+        continue
+
+    if command is None:
+        for m, sub_episode in enumerate(sub_episodes):
+            sub_outfile = os.path.join(work_folder, "episode{:02}_{:02}.mp4".format(n, m))
+            sub_args = sub_episode[:2] + [num_seconds] + sub_episode[2:]
+            render_episode(sub_args, num_frames, sub_outfile, resolution=sub_resolution)
+        subprocess.check_output(["touch", outfile])
+        continue
 
     if command == "text":
         background = (100, 50, 30)
@@ -161,26 +182,10 @@ for episode in episodes:
         for i, text in enumerate(arg.split('\n')):
             w, h = font.getsize(text)
             draw.text(((width-w)//2, int((height-h)*0.5 + 1.5*(i-0.5)*h)), text, fill='white', font=font)
+        writer = imageio.get_writer(outfile, fps=60, quality=10)
         for _ in range(num_frames):
-            image.save(os.path.join(master_folder, "frame{:05}.png".format(frame)))
+            writer.append_data(np.array(image))
             frame += 1
+        writer.close()
     else:
-        folders.append(folder)
-        threads.append(Thread(target=render_episode, args=(episode, folder, num_frames)))
-        threads[-1].start()
-
-for folder, thread in zip(folders, threads):
-    thread.join()
-    for filename in sorted(os.listdir(os.path.join(folder, "png"))):
-        source = os.path.join(folder, "png", filename)
-        destination = os.path.join(master_folder, "frame{:05}.png".format(frame))
-        shutil.move(source, destination)
-        frame += 1
-    shutil.rmtree(folder)
-
-narration = os.path.join(ASSETS_PATH, "script.wav")
-os.chdir(master_folder)
-subprocess.call(
-    "ffmpeg -framerate 60 -i frame%05d.png -i {} -codec:v libx264 -codec:a aac -crf 17 -preset slower -bf 2 -flags +cgop -pix_fmt yuv420p -movflags faststart out.mp4".format(narration),
-    shell=True,
-)
+        render_episode(episode, num_frames, outfile)

@@ -2,11 +2,13 @@ from __future__ import division
 
 import argparse
 import os
+import tempfile
 
 from matplotlib.animation import FuncAnimation
 import scipy.misc
 from pylab import *
 import numpy.random
+import imageio
 
 from lattice import make_lattice_2D
 from flow import schrodinger_flow_2D
@@ -14,24 +16,17 @@ from util import normalize_2D, advance_pde
 
 from episodes import gaussian_superposition
 from lattice import RESOLUTIONS
+from tf_integrator import WaveFunction2D
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=u'Dump frames of wave function measurements to a folder')
     parser.add_argument('episode', help='Episode name')
-    parser.add_argument('--folder', help='Folder to dump raw frames into')
     parser.add_argument('--resolution', help='Screen resolution. One of {}'.format(RESOLUTIONS.keys()), default='160p')
     parser.add_argument('--animate', help='Animate instead of dumping frames', action='store_true')
-    parser.add_argument('--num_frames', help='Number of frames to dump', type=int, default=600)
+    parser.add_argument('--num-frames', help='Number of frames to dump', type=int, default=600)
     parser.add_argument('--radius', help='Radius of the measurement blib', type=float, default=0.08)
+    parser.add_argument('--output', help='Output filename for video')
     args = parser.parse_args()
-
-    if args.folder and args.animate:
-        print('Animation is not supported while dumping to disk')
-        sys.exit()
-
-    if args.folder and not args.animate and not os.path.isdir(args.folder):
-        print("Target folder doesn't exist")
-        sys.exit()
 
     width, height = RESOLUTIONS[args.resolution]
 
@@ -42,17 +37,18 @@ if __name__ == '__main__':
         psi = normalize_2D(psi[screen], dx)
         total_samples = 16000
     elif args.episode == 'gaussian_superposition':
-        dx, screen, psi, potential, episode_length = gaussian_superposition(args.resolution)
+        episode = gaussian_superposition(args.resolution)
+        locals().update(episode)
         i = 0
         t = 0
         dt = 0.004 * dx
+        wave_function = WaveFunction2D(psi, potential, dx, dt, damping_field=damping_field)
         while t < episode_length:
             if i % 100 == 0:
                 print("Precalculating: {} % complete".format(int(100 * t / episode_length)))
-            patch = advance_pde(t, psi, potential, dt, dx, schrodinger_flow_2D, dimensions=2)
-            psi[4:-4, 4:-4] = patch
+            wave_function.step()
             t += dt
-        psi = normalize_2D(psi[screen], dx)
+        psi = normalize_2D(wave_function.get_field(), dx)
         total_samples = 40000
 
     radius = args.radius * width * 0.1
@@ -95,10 +91,19 @@ if __name__ == '__main__':
         ani = FuncAnimation(fig, update, frames=range(100), init_func=init, blit=True, repeat=True, interval=1)
         show()
     else:
-        png_path = os.path.join(args.folder, 'png')
-        if not os.path.isdir(png_path):
-            os.mkdir(png_path)
+        output_filename = args.output
+        if not output_filename:
+            folder = tempfile.mkdtemp()
+            output_filename = os.path.join(folder, "out.mp4")
+        writer = imageio.get_writer(output_filename, fps=60, quality=10)
         for frame in range(args.num_frames):
             step()
-            img = scipy.misc.toimage(counts, cmin=0, cmax=64)
-            img.save(os.path.join(png_path, "frame{:05}.png".format(frame)))
+            rgb = np.array([counts * 0.9, counts * 0.8, counts])
+            if args.episode == "static_gaussian":
+                rgb *= 0.02
+            elif args.episode == "gaussian_superposition":
+                rgb *= 0.1
+            rgb = np.minimum(rgb.transpose(1, 2, 0) * 255, 255).astype('uint8')
+            writer.append_data(rgb)
+        writer.close()
+        print("Done. Results in {}".format(output_filename))
